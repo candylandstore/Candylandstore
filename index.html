@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متجر كاندي داي - Candy Day</title>
+    <!-- تحميل Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- تحميل أيقونات Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* إعدادات خط مخصصة لضمان دعم اللغة العربية بشكل جيد */
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f7f3f9; /* خلفية ناعمة فاتحة */
+        }
+        /* التمرير السلس */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* القائمة الجانبية الرئيسية */
+        #main-menu {
+            transition: transform 0.3s ease-in-out;
+            /* يتم إخفاؤها إلى اليمين (translateX(100%)) في اتجاه RTL */
+            transform: translateX(100%); 
+        }
+        #main-menu.open {
+            transform: translateX(0); /* إظهار */
+        }
+
+        /* لوحة السلة الجانبية (تم تعديل موضع الإخفاء ليتناسب مع موقعها في شريط التنقل) */
+        #side-cart {
+            transition: transform 0.3s ease-in-out;
+            /* يتم إخفاؤها إلى اليسار (translateX(-100%)) في اتجاه RTL */
+            transform: translateX(-100%); 
+        }
+        #side-cart.open {
+            transform: translateX(0); /* إظهار */
+        }
+        
+        /* الغطاء العام (يستخدم للقائمة الرئيسية والسلة) */
+        #overlay {
+            transition: opacity 0.3s ease-in-out;
+            opacity: 0;
+            pointer-events: none;
+        }
+        #overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        /* لضمان ظهور أيقونات Phosphor Icons في جميع المتصفحات */
+        .ph {
+            line-height: 1;
+        }
+        
+        /* تنسيق أيقونة السلة المخصصة */
+        /* تم تعديل موضع أيقونة السلة (custom-cart-icon) لترك مسافة إضافية في اليسار */
+        .custom-cart-icon {
+            width: 32px; 
+            height: 32px;
+            background-image: url('https://i.imgur.com/KjofGxH.jpeg'); 
+            background-size: contain; 
+            background-repeat: no-repeat;
+            background-position: center;
+            display: block; 
+            content: '';
+        }
+
+        /* تنسيق أيقونة القائمة المخصصة الجديدة */
+        .custom-menu-icon {
+            width: 32px; 
+            height: 32px;
+            /* رابط الصورة المرفقة */
+            background-image: url('https://i.imgur.com/b8hX3KH.png'); 
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            display: block;
+            content: '';
+            /* إضافة ظل خفيف لتحسين المظهر */
+            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
+        }
+
+        /* تنسيق أيقونة الإجمالي المخصصة (الجديدة) */
+        .custom-total-icon {
+            width: 28px; /* أصغر قليلاً من السلة والقائمة */
+            height: 28px;
+            /* الصورة المرفقة من المستخدم */
+            background-image: url('https://i.imgur.com/bU9v1NQ.jpeg'); 
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            display: block;
+            content: '';
+            /* إضافة ظل طفيف لتمييزها في الـ Header */
+            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
+        }
+        
+        /* تنسيق أيقونة العملة الجديدة لبطاقات المنتجات - تم تكبير حجمها قليلاً */
+        .custom-sar-icon {
+            width: 24px; /* تم التكبير من 20px إلى 24px */
+            height: 24px; /* تم التكبير من 20px إلى 24px */
+            background-image: url('https://i.imgur.com/bU9v1NQ.jpeg'); /* نفس الصورة المستخدمة للإجمالي */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            display: inline-block; /* ليكون بجوار المبلغ */
+            content: '';
+            vertical-align: middle; /* محاذاة في المنتصف */
+            margin-right: 2px; /* مسافة بسيطة عن المبلغ */
+            margin-bottom: 2px;
+        }
+
+
+        /* تنسيق البانر المخصص */
+        .candy-banner {
+            /* تطبيق الصورة الجديدة للخلفية */
+            background-image: url('https://i.imgur.com/UyhUPFK.png');
+            background-size: cover; /* لضمان تغطية الخلفية للمربع بالكامل */
+            background-position: center; /* لتوسيط الخلفية */
+            background-repeat: no-repeat;
+            /* إضافة لون أو تدرج كطبقة لتسهيل قراءة النص */
+            position: relative;
+            /* تم تغيير اللون هنا ليصبح أبيض */
+            color: white; 
+            /* تم تعديل ظل النص ليكون أقوى لضمان الوضوح على الخلفية الملونة */
+            text-shadow: 0px 2px 4px rgba(0,0,0,0.7); 
+        }
+        /* طبقة تراكب لزيادة تباين النص */
+        .candy-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.2); /* تراكب أسود خفيف */
+            border-radius: 1.5rem; /* نفس نصف قطر البانر */
+            z-index: 0;
+        }
+        .candy-banner > * {
+            position: relative;
+            z-index: 1; /* لضمان ظهور المحتوى فوق طبقة التراكب */
+        }
+        
+        /* تنسيق بطاقة المنتج لضبط المحاذاة */
+        .product-card .product-details {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+    </style>
+    <script>
+        // إعدادات Tailwind لتخصيص الألوان
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'candy-pink': '#FF69B4', /* لون الحلوى الوردي */
+                        'candy-blue': '#87CEFA', /* لون الحلوى الأزرق الفاتح */
+                        'candy-light': '#FCDDEC', /* لون الخلفية الخفيفة للبانر */
+                        'candy-purple': '#A020F0', /* لون بنفسجي لزر الشراء */
+                        'candy-sour': '#FFEB3B', /* لون الليمون/الحامض القديم */
+                        'candy-dark-sour': '#7B0099', /* لون بنفسجي غامق/موف جديد لـ 'حامض' */
+                        'candy-sweet-sour': '#FF5722', /* لون برتقالي لـ 'حلو حامض' */
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen">
+
+    <!-- شريط التنقل العلوي (Header) -->
+    <header class="sticky top-0 bg-white shadow-md z-20">
+        <div class="max-w-4xl mx-auto p-4 flex flex-col items-center">
+            
+            <!-- الصف الأول (الآن في الأعلى): شريط البحث، السلة، والإجمالي -->
+            <div class="flex w-full items-center justify-between space-x-3 space-x-reverse mb-3">
+
+                <!-- شريط البحث (مختصر العرض) -->
+                <div class="relative flex-grow min-w-0">
+                    <input type="text" id="search-input" placeholder="أدخل كلمة البحث..." class="w-full py-2 pr-10 pl-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-candy-blue focus:border-candy-blue transition shadow-inner" aria-label="أدخل كلمة البحث">
+                    <i class="ph-magnifying-glass-bold text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2"></i>
+                </div>
+                
+                <!-- أيقونة السلة (مع العداد) - تم تحريكها إلى اليسار قليلاً باستخدام ml-2 و mr-1 -->
+                <button id="open-cart-button" aria-label="السلة" class="relative hover:opacity-80 transition p-1 mr-1">
+                    <div class="custom-cart-icon"></div> 
+                    <span id="cart-count" class="absolute top-[-5px] right-[-5px] bg-red-500 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full transform scale-0 transition-transform duration-300">0</span>
+                </button>
+                
+                <!-- أيقونة المستخدم -->
+                 <button aria-label="حساب المستخدم" class="text-gray-500 hover:text-candy-pink transition p-1 ml-2">
+                    <i class="ph-user-bold text-3xl"></i>
+                </button>
+            </div>
+
+
+            <!-- الصف الثاني (الآن في الأسفل): القائمة الرئيسية، الشعار، وعداد الإجمالي الجديد -->
+            <div class="flex w-full items-center justify-center relative">
+                
+                <!-- أيقونة القائمة الرئيسية (الطرف الأيمن) -->
+                <button id="open-menu-button" aria-label="القائمة الرئيسية" class="text-candy-pink hover:opacity-80 transition p-1 absolute right-0 top-1/2 transform -translate-y-1/2">
+                    <div class="custom-menu-icon"></div>
+                </button>
+
+                <!-- الشعار (في المنتصف) -->
+                <a href="#" class="flex items-center justify-center">
+                    <img src="https://i.imgur.com/q0r3Otr.png" alt="شعار كاندي داي" 
+                         class="h-16 sm:h-20 max-w-full transition-all duration-300" 
+                         onerror="this.onerror=null;this.src='https://placehold.co/150x40/FF69B4/FFFFFF?text=Candy+Day';" loading="eager">
+                </a>
+
+                <!-- عداد الإجمالي (الطرف الأيسر) -->
+                <div class="flex items-center space-x-1 space-x-reverse absolute left-0 top-1/2 transform -translate-y-1/2">
+                    <!-- المبلغ في اليمين -->
+                    <span id="header-cart-total" class="text-lg font-extrabold text-candy-purple">0.00</span>
+                    <!-- الأيقونة في اليسار -->
+                    <div class="custom-total-icon"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي للمتجر -->
+    <main class="max-w-4xl mx-auto p-4 pb-20">
+
+        <!-- بانر ترويجي - تم تطبيق الكلاس المخصص candy-banner وتغيير النص ولون الخط إلى text-white -->
+        <section class="candy-banner p-6 rounded-3xl shadow-lg mb-8 text-center text-white">
+            <div class="flex items-center justify-center">
+                <i class="ph-heart-straight-fill text-candy-pink text-2xl ml-2 animate-bounce-slow"></i>
+                <!-- النص الجديد هنا -->
+                <h2 class="text-xl font-extrabold">اختر مزيجك المميز حسب ذوقك</h2>
+            </div>
+            <!-- تم حذف السطر الثاني من النص -->
+        </section>
+
+        <!-- قسم المنتجات -->
+        <section id="products-section">
+            <!-- سيتم ملء الأقسام هنا بواسطة JavaScript -->
+        </section>
+
+        <!-- نافذة منبثقة بسيطة (بديل لـ alert) لعرض رسائل النظام -->
+        <div id="toast-message" class="fixed bottom-5 right-5 left-5 md:left-auto p-4 bg-gray-900 text-white rounded-lg shadow-xl opacity-0 transition-opacity duration-300 pointer-events-none text-center md:text-right" role="alert">
+            تمت الإضافة إلى السلة بنجاح!
+        </div>
+    </main>
+    
+    <!-- الغطاء العام (يستخدم للقائمة الجانبية والسلة) -->
+    <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 opacity-0 pointer-events-none"></div>
+
+    <!-- لوحة القائمة الجانبية الرئيسية (تفتح من اليمين) -->
+    <aside id="main-menu" class="fixed top-0 right-0 h-full w-full max-w-xs bg-white shadow-2xl z-40 flex flex-col p-4">
+        <div class="flex items-center justify-between pb-4 border-b">
+            <h2 class="text-xl font-bold text-candy-purple flex items-center">
+                <i class="ph-list-fill text-2xl ml-2"></i>
+                القائمة الرئيسية
+            </h2>
+            <button id="close-menu-button" aria-label="إغلاق القائمة" class="text-gray-500 hover:text-red-500 transition">
+                <i class="ph-x-bold text-2xl"></i>
+            </button>
+        </div>
+        
+        <!-- روابط القائمة -->
+        <nav class="flex-grow py-4 space-y-2">
+            <a href="#" class="flex items-center p-3 rounded-xl text-gray-700 hover:bg-candy-light hover:text-candy-pink transition font-medium">
+                <i class="ph-house-fill text-xl ml-3"></i>
+                الصفحة الرئيسية
+            </a>
+            <a href="#section-turkish" class="flex items-center p-3 rounded-xl text-gray-700 hover:bg-candy-light hover:text-candy-pink transition font-medium">
+                <i class="ph-star-fill text-xl ml-3"></i>
+                تشكيلة الحلوى التركية
+            </a>
+            <a href="#section-spanish" class="flex items-center p-3 rounded-xl text-gray-700 hover:bg-candy-light hover:text-candy-pink transition font-medium">
+                <i class="ph-star-fill text-xl ml-3"></i>
+                تشكيلة الحلوى الإسبانية
+            </a>
+            <a href="#" class="flex items-center p-3 rounded-xl text-gray-700 hover:bg-candy-light hover:text-candy-pink transition font-medium">
+                <i class="ph-sparkling-fill text-xl ml-3"></i>
+                العروض والخصومات
+            </a>
+            <!-- إضافة رابط الإنستغرام هنا -->
+            <a href="https://www.instagram.com/candylandstoree" target="_blank" class="flex items-center p-3 rounded-xl text-gray-700 hover:bg-candy-light hover:text-candy-pink transition font-medium">
+                <i class="ph-instagram-logo-fill text-xl ml-3 text-pink-600"></i>
+                تابعنا على إنستغرام
+            </a>
+            <a href="#" class="flex items-center p-3 rounded-xl text-gray-700 hover:bg-candy-light hover:text-candy-pink transition font-medium">
+                <i class="ph-info-fill text-xl ml-3"></i>
+                من نحن
+            </a>
+            <a href="https://wa.me/967782933396" target="_blank" class="flex items-center p-3 rounded-xl text-gray-700 hover:bg-candy-light hover:text-candy-pink transition font-medium">
+                <i class="ph-whatsapp-logo-fill text-xl ml-3 text-green-500"></i>
+                تواصل معنا (واتساب)
+            </a>
+        </nav>
+        
+        <!-- تذييل القائمة (معلومات إضافية) -->
+        <div class="pt-4 border-t text-sm text-gray-500">
+            <!-- تم تغيير اسم المتجر هنا -->
+            <p>متجر Candy Land لجميع أنواع الحلويات.</p>
+            <p dir="ltr" class="text-right mt-1">© 2025 All Rights Reserved.</p>
+        </div>
+    </aside>
+
+    <!-- لوحة السلة الجانبية (تفتح من اليسار) -->
+    <aside id="side-cart" class="fixed top-0 left-0 h-full w-full max-w-sm bg-white shadow-2xl z-40 flex flex-col p-4">
+        
+        <!-- رأس السلة مع زر الرجوع/الإغلاق الجديد -->
+        <div class="flex items-center justify-between pb-4 border-b relative">
+            
+            <!-- زر الرجوع إلى واجهة المنتجات (الجديد) -->
+            <button id="back-to-products-btn" aria-label="الرجوع إلى المنتجات" class="text-gray-500 hover:text-candy-pink transition p-1">
+                <i class="ph-arrow-right-bold text-2xl"></i>
+            </button>
+            
+            <!-- العنوان في المنتصف (بما أن الرجوع أصبح في اليمين، فسنعيد الإغلاق إلى اليسار) -->
+            <h2 class="text-xl font-bold text-candy-purple flex items-center absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                <i class="ph-bag-fill text-2xl ml-2"></i>
+                عربة التسوق
+            </h2>
+            
+            <!-- زر إغلاق السلة (للسهولة، يبقى في الزاوية اليسرى) -->
+             <button id="close-cart-button" aria-label="إغلاق السلة" class="text-gray-500 hover:text-red-500 transition ml-auto">
+                <i class="ph-x-bold text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- قائمة المنتجات في السلة -->
+        <div id="cart-items-list" class="flex-grow overflow-y-auto py-4 space-y-4">
+            <!-- المنتجات ستُضاف هنا بواسطة JavaScript -->
+            <p id="empty-cart-message" class="text-center text-gray-500 pt-10">السلة فارغة حاليًا. ابدأ التسوق!</p>
+        </div>
+
+        <!-- ملخص السلة وزر الدفع -->
+        <div class="pt-4 border-t sticky bottom-0 bg-white">
+            <!-- تم تعديل عرض الإجمالي ليكون المبلغ أولاً ثم رمز العملة (صورة) -->
+            <div class="flex justify-between items-center mb-3 text-lg font-semibold">
+                <span>الإجمالي:</span>
+                <span id="cart-total" class="text-candy-pink flex items-center">
+                    <!-- المبلغ سيتم وضعه هنا من JS -->
+                </span>
+            </div>
+            <!-- تم ربط هذا الزر بدالة إرسال الطلب إلى واتساب -->
+            <button id="checkout-button" class="w-full py-3 bg-candy-purple text-white rounded-xl font-bold shadow-lg shadow-candy-purple/50 hover:bg-candy-pink transition duration-300 disabled:opacity-50">
+                إرسال الطلب عبر واتساب (<span id="total-items-checkout">0</span>)
+            </button>
+        </div>
+    </aside>
+
+    <script>
+        // === بيانات المنتجات (تم تحديث تصنيفات الطعم والأسماء) ===
+        const mockProducts = [
+            // === المنتجات التركية القديمة ===
+            { 
+                id: 1, 
+                name: "جيلي قلوب حمراء", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "قلوب جيلي بنكهة الكرز، حلوى مثالية لمن تحب، ملمس ناعم وطعم لا يُنسى.", 
+                rating: "حلو حامض",
+                imageUrl: "https://i.imgur.com/XaKdkeT.png", 
+                category: "turkish"
+            },
+            { 
+                id: 2, 
+                name: "فراولة شكل شفايف", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "جيلي فريد على شكل شفاه بنكهة الفراولة الحامضة، حلوى مرحة ومحبوبة.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/0rSHBe2.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 3, 
+                name: "شرائط الفواكة (مشكل)", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "شرائط جيلي متعددة الألوان بنكهات الفواكه الاستوائية المختلفة، حلوة وحامضة.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/Q2VW5QX.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 4, 
+                name: "شرائط التفاح الأخضر", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "شرائط جيلي منعشة بنكهة التفاح الأخضر المميزة، حامضة قليلاً ولذيذة جداً.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/M7OCkP9.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 5, 
+                name: "جيلي دببة بنكهات", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "دببة جيلي كلاسيكية بمزيج من نكهات الفواكه، محبوبة من جميع الأعمار.", 
+                rating: "حلو حامض",
+                imageUrl: "https://i.imgur.com/0nqYAz0.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 6, 
+                name: "دونات الخوخ", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "حلوى جيلي على شكل حلقات الدونات بنكهة الخوخ اللذيذة والمشبعة.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/OIqU6FZ.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 7, 
+                name: "حلوى شكل الفول (جيلي بينز)", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "حبوب جيلي متعددة النكهات والألوان، حلوى كلاسيكية ممتعة ومقرمشة من الخارج.", 
+                rating: "حلو حامض",
+                imageUrl: "https://i.imgur.com/p625DAd.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 8, 
+                name: "شرائط التوت الأزرق", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "شرائط جيلي زرقاء داكنة بنكهة التوت الأزرق الحامضة والمنعشة.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/xq96kUO.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 9, 
+                name: "دونات فواكة ملونة", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "حلقات دونات جيلي بألوان زاهية ونكهات فواكه متنوعة، مظهر جذاب وطعم حلو.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/xvUW6oG.png", 
+                category: "turkish"
+            },
+            { 
+                id: 10, 
+                name: "شرائح التفاح الأخضر", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "شرائح جيلي ذات شكل تفاحة، مغطاة بالسكر الحامض، نكهة تفاح مركزة.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/oIs7XWT.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 11, 
+                name: "شرائح الرينبو الصغيرة", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "شرائط قصيرة بألوان قوس قزح، نكهة حلوة مشكلة، إضافة رائعة لمزيج الحلوى.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/k9YgIZ2.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 12, 
+                name: "حلوى جيلي كرز", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "حلوى جيلي حمراء كلاسيكية على شكل كرز، طعم غني ومطاطي بنكهة الكرز الحلو.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/UBi4gh9.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 13, 
+                name: "حلوى جيلي كولا", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "حلوى جيلي على شكل زجاجة كولا، نكهة الكولا الكلاسيكية والمحبوبة.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/1vxw3KN.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 14, 
+                name: "كاندي شكل الفراولة", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "قطع حلوى صغيرة صلبة بنكهة الفراولة، حلاوة مركزة وطعم فاكهي منعش.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/1SqxXOM.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 20, 
+                name: "شرائط الكولا", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "شرائط جيلي بنكهة الكولا المغطاة بالسكر الحامض، حامضة جداً وممتعة.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/IdQ5m85.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 21, 
+                name: "شرائط التوت الأحمر", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "شرائط جيلي حامضة بنكهة التوت الأحمر الغني والمنعش.", 
+                rating: "حامض",
+                imageUrl: "https://i.imgur.com/ZBZ8m30.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 22, 
+                name: "شرائط الفراولة", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "شرائط جيلي بنكهة الفراولة الكلاسيكية، مغطاة بالسكر الحامض لمذاق مثير.", 
+                rating: "حامض",
+                imageUrl: "https://i.imgur.com/hmFM29E.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 23, 
+                name: "شرائح الكولا الصغيرة", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "شرائح جيلي دائرية بنكهة الكولا الحامضة، صغيرة ومناسبة للتذوق المتكرر.", 
+                rating: "حامض",
+                imageUrl: "https://i.imgur.com/8gdZm05.jpeg", 
+                category: "turkish"
+            },
+            
+            // === المنتجات التركية الجديدة المضافة ===
+            { 
+                id: 24, 
+                name: "كاندي الدودة كولا", 
+                price: 11.00, 
+                weight: "100 جرام", 
+                description: "ديدان جيلي بنكهة الكولا المغطاة بالسكر الحامض، ملمس مطاطي وطعم منعش.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/1TPOwoY.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 25, 
+                name: "جيلي الدودة بالفواكة", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "ديدان جيلي ملونة بنكهات فواكه متنوعة، مزيج من الحلاوة والحموضة.", 
+                rating: "حلو حامض",
+                imageUrl: "https://i.imgur.com/UHXuSxo.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 26, 
+                name: "كاندي الدودة فواكة بالسكر", 
+                price: 12.00, 
+                weight: "100 جرام", 
+                description: "ديدان جيلي مغطاة بحبيبات السكر الحامضة، نكهات فواكه قوية ومحبوبة.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/GVBEdNC.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 27, 
+                name: "كاندي الدببة بالفواكة المسكرة", 
+                price: 11.00, 
+                weight: "100 جرام", 
+                description: "دببة جيلي بنكهات فواكه متنوعة، مغطاة بطبقة سكر لامعة وحامضة.", 
+                rating: "حامض",
+                imageUrl: "https://i.imgur.com/bSwnxGA.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 28, 
+                name: "دونات الفراولة والتوت الأزرق", 
+                price: 12.00, 
+                weight: "100 جرام", 
+                description: "دونات جيلي بشكل حلقات مزدوجة بنكهة الفراولة والتوت الأزرق الحامضة.", 
+                rating: "حامض",
+                imageUrl: "https://i.imgur.com/EJj06uw.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 29, 
+                name: "كولا بالعلكة الحامضة", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "حلوى جيلي بنكهة الكولا الحامضة، مغلفة بشكل جميل ومثيرة للمضغ.", 
+                rating: "حامض",
+                imageUrl: "https://i.imgur.com/ueoNkfu.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 30, 
+                name: "كاندي اسماك القرش بالفواكة", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "حلوى جيلي على شكل أسماك قرش بنكهات الفواكه، طعم مرح وحلو حامض.", 
+                rating: "حلو حامض", 
+                imageUrl: "https://i.imgur.com/7r96X9W.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 31, 
+                name: "جيلي فراولة", 
+                price: 9.00, 
+                weight: "100 جرام", 
+                description: "قطع جيلي كلاسيكية على شكل فراولة، طعم حلو وناعم بنكهة الفراولة الطبيعية.", 
+                rating: "حلو حامض",
+                imageUrl: "https://i.imgur.com/ZaLFM6n.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 32, 
+                name: "كاندي جيلي توت", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "جيلي على شكل حبات توت صغيرة، مزيج من نكهات التوت الغنية والحلوة.", 
+                rating: "حلو حامض",
+                imageUrl: "https://i.imgur.com/ayEG9UM.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 33, 
+                name: "كاندي التوت المسكر", 
+                price: 11.00, 
+                weight: "100 جرام", 
+                description: "حلوى جيلي بشكل التوت مغطاة بالسكر، حامضة بشكل مكثف وطعم توت واضح.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/z7fnYmi.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 34, 
+                name: "كاندي دونات الفراولة", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "دونات جيلي بنكهة الفراولة، حلوى حامضة ومرنة على شكل حلقات الدونات.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/mxuJbey.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 35, 
+                name: "كاندي جيلي الكولا", 
+                price: 10.00, 
+                weight: "100 جرام", 
+                description: "جيلي ناعم بنكهة الكولا، طعم كلاسيكي حلو مناسب للأطفال والكبار.", 
+                rating: "حلو حامض",
+                imageUrl: "https://i.imgur.com/rONRJcP.jpeg", 
+                category: "turkish"
+            },
+            { 
+                id: 36, 
+                name: "كاندي كولا الكرز", 
+                price: 11.00, 
+                weight: "100 جرام", 
+                description: "جيلي بنكهة الكرز والكولا، مزيج حلو وحامض بنكهة منعشة.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/pSsSbbX.jpeg", 
+                category: "turkish"
+            },
+            
+            // === المنتجات الإسبانية القديمة ===
+            { 
+                id: 15, 
+                name: "جيلي غيوم التوت الأزرق", 
+                price: 12.00, 
+                weight: "100 جرام", 
+                description: "قطع جيلي ناعمة على شكل غيوم بنكهة التوت الأزرق الفاخرة، حلوى إسبانية مميزة.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/fv9apiE.jpeg", 
+                category: "spanish"
+            },
+            { 
+                id: 16, 
+                name: "حلوى الليمون الحامضة", 
+                price: 12.00, 
+                weight: "100 جرام", 
+                description: "مكعبات جيلي بنكهة الليمون، مغطاة بطبقة حامضة ومنعشة، لعشاق المذاق القوي.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/unJ9bIB.jpeg", 
+                category: "spanish"
+            },
+            { 
+                id: 17, 
+                name: "حلوى الدودة الملونة", 
+                price: 12.00, 
+                weight: "100 جرام", 
+                description: "ديدان جيلي بألوان زاهية ونكهات فواكه مشكلة، حلوى مرحة ومحبوبة.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/p8OxdAi.jpeg", 
+                category: "spanish"
+            },
+            { 
+                id: 18, 
+                name: "حلوى شكل البيض", 
+                price: 12.00, 
+                weight: "100 جرام", 
+                description: "حلوى جيلي على شكل بيض مقلي مصغر، طبقة بيضاء ناعمة وصفار جيلي سائل.", 
+                rating: "حلو حامض",
+                imageUrl: "https://i.imgur.com/rO6I2UW.jpeg", 
+                category: "spanish"
+            },
+            { 
+                id: 19, 
+                name: "المكعبات الملونة", 
+                price: 12.00, 
+                weight: "100 جرام", 
+                description: "مكعبات جيلي بألوان قوس قزح ونكهات استوائية، حلوى مطاطية مثالية للمضغ.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/UmKHhxM.jpeg", 
+                category: "spanish"
+            },
+            
+            // === المنتجات الإسبانية الجديدة المضافة ===
+            { 
+                id: 37, 
+                name: "كاندي التوت", 
+                price: 13.00, 
+                weight: "100 جرام", 
+                description: "حلوى جيلي على شكل حبات توت صغيرة، نكهة توت مركزة ومغطاة بالسكر الحامض.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/xieLMRz.jpeg", 
+                category: "spanish"
+            },
+            { 
+                id: 38, 
+                name: "قلوب التوت الأزرق", 
+                price: 13.00, 
+                weight: "100 جرام", 
+                description: "قلوب جيلي بنكهة التوت الأزرق، ذات ملمس ناعم وطبقة سكر حامضة.", 
+                rating: "حامض",
+                imageUrl: "https://i.imgur.com/VE2ZCJR.jpeg", 
+                category: "spanish"
+            },
+            { 
+                id: 39, 
+                name: "شرائح البطيخ بالتوت الأزرق", 
+                price: 14.00, 
+                weight: "100 جرام", 
+                description: "شرائح جيلي على شكل بطيخ بنكهة التوت الأزرق، حلاوة التوت وحموضة منعشة.", 
+                rating: "حامض",
+                imageUrl: "https://i.imgur.com/kUUe1Nr.jpeg", 
+                category: "spanish"
+            },
+            { 
+                id: 40, 
+                name: "كاندي عيدان الكولا", 
+                price: 12.00, 
+                weight: "100 جرام", 
+                description: "عيدان جيلي طويلة ومرنة بنكهة الكولا، حلوى حامضة ومطاطية.", 
+                rating: "حامض",
+                imageUrl: "https://i.imgur.com/MklX3nz.jpeg", 
+                category: "spanish"
+            },
+            { 
+                id: 41, 
+                name: "كاندي البطيخ", 
+                price: 13.00, 
+                weight: "100 جرام", 
+                description: "قطع جيلي على شكل شرائح بطيخ، نكهة بطيخ حلوة وغنية مع لمسة حامضة.", 
+                rating: "حامض", 
+                imageUrl: "https://i.imgur.com/68LnV0Z.jpeg", 
+                category: "spanish"
+            },
+            { 
+                id: 42, 
+                name: "كاندي الكرز الحامضة", 
+                price: 13.00, 
+                weight: "100 جرام", 
+                description: "قطع جيلي على شكل كرز بنكهة الكرز، مغطاة بالسكر الحامض لمذاق مثير.", 
+                rating: "حامض",
+                imageUrl: "https://i.imgur.com/ay1XFiW.jpeg", 
+                category: "spanish"
+            }
+        ];
+        // === نهاية بيانات المنتجات ===
+
+        // رقم الواتساب الخاص بالمتجر
+        const WHATSAPP_NUMBER = "967782933396"; 
+
+        // حالة التطبيق
+        let cartItems = {}; // {productId: count}
+        // حالة العرض لكل قسم على حدة
+        let viewAllState = { 
+            turkish: false,
+            spanish: false
+        };
+        const initialLimitTurkish = 6; // الحد الأقصى للعرض للقسم التركي
+        const initialLimitSpanish = 6; // الحد الأقصى للعرض للقسم الإسباني 
+
+        // العناصر الرئيسية في DOM
+        const productsSectionEl = document.getElementById('products-section'); // العنصر الذي سيحتوي كل الأقسام
+        const cartCountEl = document.getElementById('cart-count');
+        const searchInputEl = document.getElementById('search-input');
+        const toastMessageEl = document.getElementById('toast-message');
+        const sideCartEl = document.getElementById('side-cart');
+        const mainMenuEl = document.getElementById('main-menu'); 
+        const overlayEl = document.getElementById('overlay'); 
+        const openCartButtonEl = document.getElementById('open-cart-button');
+        const closeCartButtonEl = document.getElementById('close-cart-button');
+        const openMenuButtonEl = document.getElementById('open-menu-button'); 
+        const closeMenuButtonEl = document.getElementById('close-menu-button'); 
+        const cartItemsListEl = document.getElementById('cart-items-list');
+        const emptyCartMessageEl = document.getElementById('empty-cart-message');
+        const cartTotalEl = document.getElementById('cart-total');
+        const checkoutButtonEl = document.getElementById('checkout-button');
+        const totalItemsCheckoutEl = document.getElementById('total-items-checkout');
+        const backToProductsBtnEl = document.getElementById('back-to-products-btn');
+        const headerCartTotalEl = document.getElementById('header-cart-total');
+
+
+        /**
+         * تحديث واجهة مستخدم عربة التسوق الرئيسية والجانبية.
+         */
+        function updateCartUI() {
+            const totalItems = Object.values(cartItems).reduce((sum, count) => sum + count, 0);
+            let totalPrice = 0;
+            
+            // 1. تحديث عداد السلة الرئيسي
+            cartCountEl.textContent = totalItems;
+            if (totalItems > 0) {
+                cartCountEl.classList.add('scale-100');
+                checkoutButtonEl.disabled = false;
+                emptyCartMessageEl.style.display = 'none';
+            } else {
+                cartCountEl.classList.remove('scale-100');
+                checkoutButtonEl.disabled = true;
+                emptyCartMessageEl.style.display = 'block';
+            }
+            totalItemsCheckoutEl.textContent = totalItems;
+
+            // 2. تحديث قائمة المنتجات في اللوحة الجانبية
+            cartItemsListEl.innerHTML = '';
+            
+            Object.keys(cartItems).forEach(id => {
+                const product = mockProducts.find(p => p.id === parseInt(id));
+                const count = cartItems[id];
+                if (product && count > 0) {
+                    const itemTotal = product.price * count;
+                    totalPrice += itemTotal;
+                    
+                    // إزالة كلمة 'ر.س'
+                    const itemTotalFormatted = itemTotal.toFixed(2).replace('.', ',');
+                    const productPriceFormatted = product.price.toFixed(2).replace('.', ',');
+
+                    // دالة مساعدة لإنشاء أيقونة العملة كعنصر DOM
+                    const createCurrencyIcon = () => '<div class="custom-sar-icon inline-block relative top-0.5 mr-1"></div>';
+                    
+                    const cartItemHtml = `
+                        <div class="flex items-center border-b pb-4 last:border-b-0">
+                            <img src="${product.imageUrl}" alt="${product.name}" class="w-16 h-16 rounded-lg object-cover ml-3" onerror="this.src='https://placehold.co/64x64/FFC0CB/FF1493?text=C'">
+                            <div class="flex-grow">
+                                <p class="font-semibold text-gray-800 text-sm">${product.name}</p>
+                                <!-- استخدام الأيقونة بدلاً من النص -->
+                                <p class="text-xs text-gray-500">${product.weight} @ ${productPriceFormatted}${createCurrencyIcon()}</p>
+                            </div>
+                            <div class="flex flex-col items-end justify-between h-full">
+                                <p class="text-sm font-bold text-candy-purple flex items-center">
+                                    ${itemTotalFormatted}${createCurrencyIcon()}
+                                </p>
+                                <div class="flex items-center space-x-2 space-x-reverse mt-2">
+                                    
+                                    <!-- زر إزالة المنتج بالكامل (أكبر حجماً قليلاً) -->
+                                    <button data-product-id="${id}" class="remove-item-btn text-red-500 hover:text-red-700 p-2 rounded-full text-xl" aria-label="حذف المنتج">
+                                        <i class="ph-trash-bold"></i>
+                                    </button>
+
+                                    <!-- أزرار زيادة ونقصان الكمية (أكبر حجماً قليلاً) -->
+                                    <button data-product-id="${id}" class="update-cart-btn text-gray-500 hover:text-candy-purple p-2 rounded-full text-lg" data-action="decrease">
+                                        <i class="ph-minus-bold"></i>
+                                    </button>
+                                    <span class="text-sm font-medium w-4 text-center">${count}</span>
+                                    <button data-product-id="${id}" class="update-cart-btn text-gray-500 hover:text-candy-purple p-2 rounded-full text-lg" data-action="increase">
+                                        <i class="ph-plus-bold"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    cartItemsListEl.insertAdjacentHTML('beforeend', cartItemHtml);
+                }
+            });
+
+            // 3. تحديث الإجمالي في السلة الجانبية
+            const totalPriceFormatted = totalPrice.toFixed(2).replace('.', ',');
+            // تحديث الإجمالي في السلة الجانبية باستخدام الأيقونة
+            cartTotalEl.innerHTML = `
+                ${totalPriceFormatted}
+                <div class="custom-total-icon w-5 h-5 ml-1"></div>
+            `;
+            
+            // 4. تحديث الإجمالي في شريط العنوان العلوي (الجديد)
+            headerCartTotalEl.textContent = totalPriceFormatted;
+
+            // إضافة مستمعي التحديث والحذف للأزرار الجديدة
+            document.querySelectorAll('.update-cart-btn').forEach(button => {
+                button.removeEventListener('click', handleCartUpdate); 
+                button.addEventListener('click', handleCartUpdate);
+            });
+            document.querySelectorAll('.remove-item-btn').forEach(button => {
+                button.removeEventListener('click', handleRemoveItem); 
+                button.addEventListener('click', handleRemoveItem);
+            });
+        }
+        
+        /**
+         * التعامل مع زيادة/نقصان كمية المنتج في السلة.
+         */
+        function handleCartUpdate(event) {
+            const id = parseInt(event.currentTarget.dataset.productId);
+            const action = event.currentTarget.dataset.action;
+
+            if (action === 'increase') {
+                cartItems[id] = (cartItems[id] || 0) + 1;
+            } else if (action === 'decrease') {
+                if (cartItems[id] > 1) {
+                    cartItems[id] -= 1;
+                } else {
+                    delete cartItems[id]; // إزالة المنتج إذا كان العد سيصبح صفر
+                }
+            }
+            updateCartUI();
+        }
+
+        /**
+         * إزالة منتج بالكامل من السلة.
+         */
+        function handleRemoveItem(event) {
+            const id = parseInt(event.currentTarget.dataset.productId);
+            const product = mockProducts.find(p => p.id === id);
+            
+            if (product && cartItems[id]) {
+                delete cartItems[id];
+                showToast(`تمت إزالة ${product.name} من السلة.`);
+                updateCartUI();
+            }
+        }
+
+        /**
+         * إضافة منتج إلى عربة التسوق.
+         */
+        function addToCart(productId, productName) {
+            cartItems[productId] = (cartItems[productId] || 0) + 1;
+            updateCartUI();
+            showToast(`تمت إضافة ${productName} إلى السلة بنجاح!`);
+        }
+        
+        /**
+         * تجهيز رسالة السلة وإرسالها إلى WhatsApp.
+         */
+        function sendCartToWhatsApp() {
+            let totalPrice = 0;
+            let messageItems = [];
+            let itemNumber = 1;
+
+            Object.keys(cartItems).forEach(id => {
+                const product = mockProducts.find(p => p.id === parseInt(id));
+                const count = cartItems[id];
+                if (product && count > 0) {
+                    const itemTotal = product.price * count;
+                    totalPrice += itemTotal;
+                    // تنسيق السعر بالريال السعودي
+                    const itemTotalFormatted = itemTotal.toFixed(2); 
+
+                    messageItems.push(
+                        `${itemNumber}. ${product.name}: (${count}x) = ${itemTotalFormatted} ر.س`
+                    );
+                    itemNumber++;
+                }
+            });
+
+            if (messageItems.length === 0) {
+                showToast("عربة التسوق فارغة، لا يمكن إرسال الطلب.");
+                return;
+            }
+
+            const grandTotalFormatted = totalPrice.toFixed(2);
+
+            // بناء نص الرسالة
+            const whatsappMessage = `*طلب جديد من متجر كاندي لاند* 🍬
+
+---
+*تفاصيل الطلب:*
+${messageItems.join('\n')}
+---
+*الإجمالي الكلي:* ${grandTotalFormatted} ر.س
+---
+*الرجاء تأكيد تفاصيل الطلب والتواصل معي لإتمام عملية الشحن والدفع.*
+`;
+
+            // ترميز الرسالة لـ URL
+            const encodedMessage = encodeURIComponent(whatsappMessage);
+            
+            // بناء رابط WhatsApp
+            const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+
+            // فتح الرابط في نافذة/علامة تبويب جديدة
+            window.open(whatsappUrl, '_blank');
+            
+            // إغلاق السلة بعد الإرسال
+            toggleSideCart(false);
+            showToast("تم تحويلك إلى واتساب لإرسال الطلب.");
+        }
+
+
+        /**
+         * فتح وإغلاق لوحة السلة الجانبية.
+         */
+        function toggleSideCart(open) {
+            // إغلاق القائمة الرئيسية أولاً إذا كانت مفتوحة
+            if (mainMenuEl.classList.contains('open')) {
+                toggleMainMenu(false);
+            }
+            
+            if (open) {
+                sideCartEl.classList.add('open');
+                overlayEl.classList.add('open');
+                document.body.style.overflow = 'hidden'; 
+            } else {
+                sideCartEl.classList.remove('open');
+                overlayEl.classList.remove('open');
+                // لا نفتح التمرير إلا إذا كانت القائمة الرئيسية مغلقة أيضًا
+                if (!mainMenuEl.classList.contains('open')) {
+                    document.body.style.overflow = '';
+                }
+            }
+        }
+        
+        /**
+         * فتح وإغلاق لوحة القائمة الرئيسية الجانبية.
+         */
+        function toggleMainMenu(open) {
+            // إغلاق السلة أولاً إذا كانت مفتوحة
+            if (sideCartEl.classList.contains('open')) {
+                toggleSideCart(false);
+            }
+            
+            if (open) {
+                mainMenuEl.classList.add('open');
+                overlayEl.classList.add('open');
+                document.body.style.overflow = 'hidden'; 
+            } else {
+                mainMenuEl.classList.remove('open');
+                overlayEl.classList.remove('open');
+                // لا نفتح التمرير إلا إذا كانت السلة مغلقة أيضًا
+                if (!sideCartEl.classList.contains('open')) {
+                    document.body.style.overflow = ''; 
+                }
+            }
+        }
+        
+        /**
+         * عرض رسالة إشعار (Toast) للمستخدم.
+         */
+        function showToast(message) {
+            toastMessageEl.textContent = message;
+            toastMessageEl.classList.remove('opacity-0', 'pointer-events-none');
+            toastMessageEl.classList.add('opacity-100');
+            
+            // إخفاء التوست بعد 3 ثواني
+            setTimeout(() => {
+                toastMessageEl.classList.remove('opacity-100');
+                toastMessageEl.classList.add('opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        /**
+         * إنشاء بطاقة منتج HTML.
+         */
+        function createProductCard(product) {
+            const productPriceFormatted = product.price.toFixed(2).replace('.', ',');
+
+            // تحديد ما إذا كان يجب عرض النجوم (التقييم) أو كلمة "حامض"/"حلو حامض"
+            let ratingDisplay = '';
+            
+            if (typeof product.rating === 'string') {
+                const ratingText = product.rating.toLowerCase().trim();
+
+                if (ratingText === 'حامض') {
+                    // تصنيف "حامض" - لون بنفسجي داكن
+                    ratingDisplay = `
+                        <div class="flex items-center justify-center mt-1 mb-2">
+                            <span class="text-xs font-bold text-candy-dark-sour bg-purple-100 px-2 py-0.5 rounded-full border border-candy-dark-sour">
+                                <i class="ph-lemon-fill text-sm ml-1"></i>
+                                حامض
+                            </span>
+                        </div>
+                    `;
+                } else if (ratingText === 'حلو حامض') {
+                    // تصنيف "حلو حامض" - لون برتقالي
+                    ratingDisplay = `
+                        <div class="flex items-center justify-center mt-1 mb-2">
+                            <span class="text-xs font-bold text-candy-sweet-sour bg-orange-100 px-2 py-0.5 rounded-full border border-candy-sweet-sour">
+                                <i class="ph-sparkling-fill text-sm ml-1"></i>
+                                حلو حامض
+                            </span>
+                        </div>
+                    `;
+                } else {
+                     // في حالة عدم وجود تصنيف واضح، نضع مسافة للحفاظ على التصميم
+                     ratingDisplay = `<div class="mt-1 mb-2 h-6"></div>`; 
+                }
+            } else {
+                 // في حالة عدم وجود تقييم أو عدم وجود كلمة 'حامض' واضحة، نضع مسافة للحفاظ على التصميم
+                 ratingDisplay = `<div class="mt-1 mb-2 h-6"></div>`; 
+            }
+            
+
+            return `
+                <div class="product-card bg-white rounded-2xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl relative">
+                    <!-- زر الإعجاب (قلب) -->
+                    <button aria-label="أضف للمفضلة" class="absolute top-2 left-2 text-white bg-black/30 p-1 rounded-full z-[5] hover:bg-candy-pink transition">
+                        <i class="ph-heart-bold text-xl"></i>
+                    </button>
+                    
+                    <!-- صورة المنتج -->
+                    <div class="h-40 overflow-hidden bg-gray-100 flex items-center justify-center">
+                        <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105" 
+                             onerror="this.onerror=null;this.src='https://placehold.co/400x400/FFC0CB/FF1493?text=Candy';" loading="lazy">
+                    </div>
+                    
+                    <!-- تفاصيل المنتج - تم تعديل ارتفاع الاسم والوصف لضمان المحاذاة -->
+                    <div class="p-3 text-center product-details">
+                        <!-- اسم المنتج: ارتفاع ثابت لضمان المحاذاة -->
+                        <p class="text-sm font-semibold text-gray-800 h-10 overflow-hidden line-clamp-2" title="${product.description}">${product.name}</p>
+                        <!-- الوصف المختصر (الوزن هنا لتمييزه): ارتفاع ثابت لضمان المحاذاة -->
+                        <p class="text-xs text-gray-500 h-5 overflow-hidden mt-1">${product.weight}</p>
+                        
+                        <!-- التقييم / حامض / حلو حامض -->
+                        ${ratingDisplay}
+                        
+                        <!-- السعر - تم استبدال 'ر.س' بالأيقونة المخصصة -->
+                        <p class="text-lg font-bold text-candy-purple flex items-center justify-center">
+                            ${productPriceFormatted} 
+                            <!-- أيقونة العملة (أصبحت أكبر الآن) -->
+                            <span class="custom-sar-icon mr-1"></span> 
+                        </p>
+                        
+                        <!-- زر الإضافة للسلة -->
+                        <button data-product-id="${product.id}" 
+                                data-product-name="${product.name}"
+                                class="add-to-cart-btn mt-3 w-full py-2 bg-candy-pink text-white rounded-xl font-bold text-sm shadow-md shadow-candy-pink/50 hover:bg-candy-purple transition duration-200 flex items-center justify-center">
+                            <i class="ph-bag-fill text-lg ml-2"></i>
+                            إضافة للسلة
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * عرض قائمة المنتجات مقسمة حسب الفئات.
+         * @param {Array} productsToDisplay - قائمة المنتجات المراد عرضها (عادة بعد البحث).
+         */
+        function renderProducts(productsToDisplay) {
+            // تجميع المنتجات حسب الفئات
+            const categories = productsToDisplay.reduce((acc, product) => {
+                const category = product.category || 'other'; // تعيين فئة افتراضية
+                if (!acc[category]) {
+                    acc[category] = [];
+                }
+                acc[category].push(product);
+                return acc;
+            }, {});
+
+            productsSectionEl.innerHTML = '';
+            
+            // تحديد أسماء الفئات باللغة العربية وترتيب العرض
+            const categoryTitles = {
+                'turkish': 'تشكيلة الحلوى التركية',
+                'spanish': 'تشكيلة الحلوى الإسبانية'
+            };
+            const orderedCategories = ['turkish', 'spanish'].filter(key => categories[key] && categories[key].length > 0);
+
+            // حلقة على الفئات لعرضها
+            orderedCategories.forEach(categoryKey => {
+                const categoryProducts = categories[categoryKey];
+                const sectionTitle = categoryTitles[categoryKey] || 'منتجات أخرى';
+                const sectionId = `section-${categoryKey}`;
+                
+                // تحديد الحد الأقصى للعرض لكل قسم
+                let limit = (categoryKey === 'turkish') ? initialLimitTurkish : initialLimitSpanish;
+                
+                // تحديد المنتجات للعرض بناءً على حالة العرض المخزنة للفئة
+                const isViewingAll = viewAllState[categoryKey];
+                const productsToShow = isViewingAll ? categoryProducts : categoryProducts.slice(0, limit);
+                const showToggleButton = categoryProducts.length > limit;
+                
+                // بناء قسم HTML
+                const sectionHtml = `
+                    <div id="${sectionId}" class="mb-10">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-bold text-gray-800">${sectionTitle}</h3>
+                            ${showToggleButton ? `
+                            <button data-section-id="${sectionId}" data-category-key="${categoryKey}" aria-label="عرض الكل/عرض أقل" class="toggle-view-btn text-candy-blue hover:text-candy-purple transition font-medium text-sm flex items-center">
+                                ${isViewingAll ? 'عرض أقل' : 'عرض الكل'}
+                                <i class="ph-arrow-${isViewingAll ? 'up' : 'left'}-bold text-lg mr-1"></i>
+                            </button>
+                            ` : ''}
+                        </div>
+                        <div id="product-list-${categoryKey}" class="product-list-grid grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                            ${productsToShow.map(createProductCard).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                // إضافة القسم إلى واجهة المستخدم
+                productsSectionEl.insertAdjacentHTML('beforeend', sectionHtml);
+            });
+            
+            // إضافة مستمعي زر "إضافة للسلة" بعد عرض البطاقات
+            document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+                button.removeEventListener('click', handleAddToCartButtonClick);
+                button.addEventListener('click', handleAddToCartButtonClick);
+            });
+            
+            // إضافة مستمعي لزر تبديل العرض (مع تمرير البيانات المطلوبة للتمرير)
+            document.querySelectorAll('.toggle-view-btn').forEach(button => {
+                button.removeEventListener('click', handleToggleViewClick);
+                button.addEventListener('click', handleToggleViewClick);
+            });
+        }
+        
+        function handleAddToCartButtonClick(event) {
+            const id = parseInt(event.currentTarget.dataset.productId);
+            const name = event.currentTarget.dataset.productName;
+            addToCart(id, name);
+        }
+        
+        // **الدالة الجديدة للتعامل مع النقر على زر التبديل**
+        function handleToggleViewClick(event) {
+            const sectionId = event.currentTarget.dataset.sectionId;
+            const categoryKey = event.currentTarget.dataset.categoryKey;
+            
+            toggleProductView(categoryKey, sectionId);
+        }
+
+        /**
+         * تبديل عرض المنتجات بين الإظهار الجزئي (initialLimit) والإظهار الكلي.
+         * @param {string} categoryKey - مفتاح الفئة المراد تبديل عرضها.
+         * @param {string} sectionId - معرف عنصر القسم في DOM للتمرير إليه.
+         */
+        function toggleProductView(categoryKey, sectionId) {
+            // تبديل حالة العرض الخاصة بالفئة
+            viewAllState[categoryKey] = !viewAllState[categoryKey];
+            
+            // إعادة عرض جميع المنتجات بناءً على الحالة الجديدة
+            handleSearch(); // استخدام handleSearch لضمان إعادة رسم الشاشة بشكل صحيح
+            
+            // التمرير إلى القسم الذي تم النقر عليه
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+
+        /**
+         * التعامل مع البحث عن المنتجات.
+         */
+        function handleSearch() {
+            const searchTerm = searchInputEl.value.toLowerCase().trim();
+            
+            let displayedProducts;
+            if (searchTerm === "") {
+                // إذا كان مربع البحث فارغًا، استخدم القائمة الكاملة
+                displayedProducts = mockProducts;
+            } else {
+                // إذا كان هناك بحث، قم بالتصفية واعرض النتائج كاملة 
+                displayedProducts = mockProducts.filter(product => 
+                    product.name.toLowerCase().includes(searchTerm) || 
+                    product.description.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // لحفظ حالة العرض الأصلية قبل التغيير المؤقت للبحث
+            const originalViewAllState = {...viewAllState}; 
+            if (searchTerm !== "") {
+                 viewAllState.turkish = true;
+                 viewAllState.spanish = true;
+            }
+
+            renderProducts(displayedProducts);
+            
+            // استعادة حالة العرض بعد الانتهاء من الرسم إذا كنا في وضع البحث
+            if (searchTerm !== "") {
+                 viewAllState = originalViewAllState;
+            }
+
+
+            // عرض رسالة إذا لم يتم العثور على نتائج
+            if (displayedProducts.length === 0) {
+                productsSectionEl.innerHTML = `<div class="col-span-2 sm:col-span-3 md:col-span-4 text-center py-10 text-gray-500">
+                    <i class="ph-x-circle-fill text-4xl mb-2"></i>
+                    <p class="font-bold">عفواً، لم يتم العثور على منتجات مطابقة لـ "${searchInputEl.value}"</p>
+                </div>`;
+            }
+        }
+
+
+        // إعداد المستمعين للأحداث
+        window.onload = function() {
+            // 1. عرض المنتجات الافتراضية عند التحميل
+            renderProducts(mockProducts);
+            
+            // 2. تحديث عداد السلة عند التحميل
+            updateCartUI();
+
+            // 3. إضافة مستمع لخانة البحث
+            searchInputEl.addEventListener('input', handleSearch);
+            
+            // 4. إضافة مستمعي فتح وإغلاق لوحة السلة والقائمة الرئيسية
+            openCartButtonEl.addEventListener('click', () => toggleSideCart(true));
+            closeCartButtonEl.addEventListener('click', () => toggleSideCart(false));
+            openMenuButtonEl.addEventListener('click', () => toggleMainMenu(true)); 
+            closeMenuButtonEl.addEventListener('click', () => toggleMainMenu(false)); 
+
+            // 5. إضافة مستمع لزر الرجوع الجديد في السلة
+            backToProductsBtnEl.addEventListener('click', () => toggleSideCart(false));
+
+            // 6. إغلاق القوائم عند النقر على الغطاء
+            overlayEl.addEventListener('click', () => {
+                toggleSideCart(false);
+                toggleMainMenu(false);
+            });
+
+            // 7. زر إتمام الشراء (ربطه بدالة WhatsApp الجديدة)
+            checkoutButtonEl.addEventListener('click', sendCartToWhatsApp);
+        }
+        
+    </script>
+
+</body>
+</html>
+
